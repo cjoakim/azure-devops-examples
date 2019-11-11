@@ -1,0 +1,49 @@
+# DevOps Pipeline Build file.
+# The two RG_ variables are defined in the 'regular-variable-group'
+# while the several AZURESPxxx (Service Principal) variables are defined
+# in 'keyvault-variable-group' and get their values from my Azure Key Vault.
+#
+# Chris Joakim, Microsoft, 2019/11/11
+
+trigger:
+- master
+
+pool:
+  vmImage: 'Ubuntu 16.04'
+
+variables:
+- group: regular-variable-group
+- group: keyvault-variable-group
+
+steps:
+- script: |
+    echo 'RG_NAME:                '$(RG_NAME)
+    echo 'RG_REGION:              '$(RG_REGION)
+    echo 'AZURESPARMAPPID:        '$(AZURESPARMAPPID)
+    echo 'AZURESPARMPASS:         '$(AZURESPARMPASS)
+    echo 'AZURESPARMTENANT:       '$(AZURESPARMTENANT)
+  displayName: 'display the pipeline variables; thekeyvault-variable-group values will appear as ***'
+  condition: always()
+
+- script: env | sort
+  displayName: 'display environment variables'
+
+- script: ls -alR
+  displayName: 'list files'
+
+- script: az login --service-principal --username $(AZURESPARMAPPID) --password $(AZURESPARMPASS) --tenant $(AZURESPARMTENANT)
+  displayName: 'az login'
+
+- script: az group create --name $(RG_NAME) --location $(RG_REGION)
+  displayName: 'create resource group'
+
+- script: | 
+    epoch_time=`date +%s`
+    deployment_name=""$epoch_time"-storage-deployment"
+    echo "deployment_name: "$deployment_name
+    az group deployment create \
+      --name $deployment_name \
+      --resource-group $(RG_NAME) \
+      --template-file storage-template.json \
+      --parameters @storage-parameters.json
+  displayName: 'create ARM deployment'
