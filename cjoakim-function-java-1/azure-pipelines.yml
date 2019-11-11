@@ -1,0 +1,154 @@
+# Azure DevOps Pipeline to build and deploy a Java Azure Function.
+# See https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-java-maven
+# See https://docs.microsoft.com/en-us/azure/devops/pipelines/ecosystems/java-function?view=azure-devops
+# https://devblogs.microsoft.com/devops/whats-new-with-azure-pipelines/
+# https://github.com/MicrosoftDocs/pipelines-multistage
+#
+# Chris Joakim, Microsoft, 2019/11/08
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  appName: cjoakimfunctionjava1
+  serviceConnectionToAzure: connection-to-cjoakimfunctionjava1
+
+steps:
+- script: |
+    echo 'appName:                         '$(appName)
+    echo 'serviceConnectionToAzure:        '$(serviceConnectionToAzure)
+    echo 'system.defaultworkingdirectory:  '$(system.defaultworkingdirectory)
+    echo 'build.artifactstagingdirectory:  '$(build.artifactstagingdirectory)
+  displayName: 'display the pipeline variables'
+  condition: always()
+
+- script: echo $SHELL
+  displayName: 'display current shell program'
+  # /bin/bash
+
+- script: env | sort 
+  displayName: 'display current environment variables'
+  # The output includes these values:
+  # JAVA_HOME_11_X64=/usr/lib/jvm/zulu-11-azure-amd64
+  # JAVA_HOME_12_X64=/usr/lib/jvm/zulu-12-azure-amd64
+  # JAVA_HOME_7_X64=/usr/lib/jvm/zulu-7-azure-amd64
+  # JAVA_HOME_8_X64=/usr/lib/jvm/zulu-8-azure-amd64
+  # JAVA_HOME=/usr/lib/jvm/zulu-8-azure-amd64
+  # M2_HOME=/usr/share/apache-maven-3.6.1
+
+- script: which mvn
+  displayName: 'which mvn'
+  # output:
+  # /usr/bin/mvn
+
+- script: mvn -version
+  displayName: 'mvn -version'
+  # output:
+  # Apache Maven 3.6.1 (d66c9c0b3152b2e69ee9bac180bb8fcc8e6af555; 2019-04-04T19:00:29Z)
+  # Maven home: /usr/share/apache-maven-3.6.1
+  # Java version: 1.8.0_232, vendor: Azul Systems, Inc., runtime: /usr/lib/jvm/zulu-8-azure-amd64/jre
+  # Default locale: en_US, platform encoding: UTF-8
+  # OS name: "linux", version: "4.15.0-1061-azure", arch: "amd64", family: "unix"
+
+- script: which java
+  displayName: 'which java'
+  # output:
+  # /usr/bin/java
+
+- script: java -version
+  displayName: 'java -version'
+  # output:
+  # openjdk version "1.8.0_232"
+  # OpenJDK Runtime Environment (Zulu 8.42.0.21-linux64)-Microsoft-Azure-restricted (build 1.8.0_232-b18)
+  # OpenJDK 64-Bit Server VM (Zulu 8.42.0.21-linux64)-Microsoft-Azure-restricted (build 25.232-b18, mixed mode)
+
+- script: ls -alR $JAVA_HOME_12_X64
+  displayName: 'explore JAVA_HOME_11_X64'
+
+- script: ls -alR $JAVA_HOME_11_X64
+  displayName: 'explore JAVA_HOME_11_X64'
+
+- script: ls -alR $JAVA_HOME_8_X64
+  displayName: 'explore JAVA_HOME_8_X64'
+
+- script: ls -alR $JAVA_HOME_7_X64
+  displayName: 'explore JAVA_HOME_7_X64'
+
+- script: /usr/lib/jvm/zulu-12-azure-amd64/bin/java -version
+  displayName: 'java 12 version'
+  # output:
+  # openjdk version "12.0.2" 2019-07-16
+  # OpenJDK Runtime Environment 19.7-(Zulu-12.3+11-linux_x64)-TECH-PREVIEW-Microsoft-Azure-restricted (build 12.0.2+3)
+  # OpenJDK 64-Bit Server VM 19.7-(Zulu-12.3+11-linux_x64)-TECH-PREVIEW-Microsoft-Azure-restricted (build 12.0.2+3, mixed mode, sharing)
+
+- script: /usr/lib/jvm/zulu-11-azure-amd64/bin/java -version
+  displayName: 'java 11 version'
+  # output:
+  # openjdk version "11.0.5" 2019-10-15 LTS
+  # OpenJDK Runtime Environment 19.10-(Zulu-11.35+13-linux_x64)-Microsoft-Azure-restricted (build 11.0.5+10-LTS)
+  # OpenJDK 64-Bit Server VM 19.10-(Zulu-11.35+13-linux_x64)-Microsoft-Azure-restricted (build 11.0.5+10-LTS, mixed mode)
+
+- script: /usr/lib/jvm/zulu-7-azure-amd64/bin/java -version
+  displayName: 'java 7 version'
+  # output:
+  # openjdk version "1.7.0_242"
+  # OpenJDK Runtime Environment (Zulu 7.34.0.5-linux64)-Microsoft-Azure-restricted (build 1.7.0_242-b7)
+  # OpenJDK 64-Bit Server VM (Zulu 7.34.0.5-linux64)-Microsoft-Azure-restricted (build 24.242-b7, mixed mode)
+
+- script: find /usr/share/ -type d -print
+  displayName: 'print the /usr/share/ subdirectories'
+
+- script: find /usr/share/ -type d -print | grep maven
+  displayName: 'print the /usr/share/ subdirectories | grep maven'
+
+- script: find /opt/ -type d -print
+  displayName: 'print the /opt/ subdirectories'
+
+- script: ls -alR /usr/bin/
+  displayName: 'ls -alR /usr/bin/'
+
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: 'package'
+
+- task: CopyFiles@2
+  displayName: Copy Files
+  inputs:
+    SourceFolder: $(system.defaultworkingdirectory)/target/azure-functions/
+    Contents: '**'
+    TargetFolder: $(build.artifactstagingdirectory)   
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifact
+  inputs:
+    PathtoPublish: $(build.artifactstagingdirectory)    
+
+- script: pwd
+  displayName: 'show pwd'
+  condition: always()
+
+- script: ls -alR
+  displayName: 'list files'
+  condition: always()
+
+- script: find /opt/ -type d -print
+  displayName: 'print the /opt/ subdirectories'
+
+- task: AzureFunctionApp@1
+  displayName: Azure Function App deploy
+  inputs:
+    azureSubscription: $(serviceConnectionToAzure)
+    appType: functionApp
+    appName: $(appName)
+    package: $(build.artifactstagingdirectory)/$(appName)
+    
