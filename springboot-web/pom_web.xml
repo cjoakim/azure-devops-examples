@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.2.0.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.chrisjoakim.azure</groupId>
+	<artifactId>springboot-airports-web</artifactId>
+	<version>0.0.1</version>
+	<name>airports</name>
+	<description>Spring Boot project with Azure, CosmosDB, DevOps and Airport Data</description>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<azure.version>2.2.0</azure.version>
+	</properties>
+
+	<dependencies>
+		<!-- Generated Dependencies -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+		<dependency>
+			<groupId>com.microsoft.azure</groupId>
+			<artifactId>azure-spring-boot-starter</artifactId>
+		</dependency>
+
+		<!-- manually added azure-cosmosdb-spring-boot-starter -->
+		<dependency>
+			<groupId>com.microsoft.azure</groupId>
+			<artifactId>azure-cosmosdb-spring-boot-starter</artifactId>
+		</dependency>
+		
+		<!-- Manually added: Commons CSV -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.7</version>
+		</dependency>
+
+		<!-- Manually added: CosmosDB Async SDK -->
+		<dependency>
+			<groupId>com.microsoft.azure</groupId>
+			<artifactId>azure-cosmosdb</artifactId>
+			<version>2.6.3</version>
+		</dependency>
+
+		<!-- Generated Dependencies -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.microsoft.azure</groupId>
+				<artifactId>azure-spring-boot-bom</artifactId>
+				<version>${azure.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.chrisjoakim.azure.airports.WebApplication</mainClass>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>web</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<spring.profiles.active>web</spring.profiles.active>
+				<spring.boot.mainclass>com.chrisjoakim.azure.airports.WebApplication</spring.boot.mainclass>
+			</properties>
+		</profile>
+		<profile>
+			<id>noop</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<spring.profiles.active>noop</spring.profiles.active>
+				<spring.boot.mainclass>com.chrisjoakim.azure.airports.NoOpApp</spring.boot.mainclass>
+			</properties>
+		</profile>
+		<profile>
+			<id>cosmossql</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<spring.profiles.active>cosmossql</spring.profiles.active>
+				<spring.boot.mainclass>com.chrisjoakim.azure.airports.CosmosSqlApp</spring.boot.mainclass>
+			</properties>
+		</profile>
+	</profiles>
+
+</project>

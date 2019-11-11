@@ -14,4 +14,4 @@ Examples of using Azure DevOps, including Containerized Spring Boot apps, and AR
 
 ### [DevOps with Azure ARM Templates](devops-arm-1/)
 
-### [DevOps with Containerized Spring Boot apps and Azure AppService](devops-arm-1/)
+### [DevOps with Containerized Spring Boot apps and Azure AppService](springboot-web/)
