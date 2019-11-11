@@ -1,6 +1,6 @@
 # azure-devops-examples
 
-Examples of using Azure DevOps, including Containerized Spring Boot apps, and ARM templates
+Examples of using Azure DevOps
 
 ## Links
 
