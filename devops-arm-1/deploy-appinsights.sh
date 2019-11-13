@@ -1,6 +1,11 @@
 #!/bin/bash
 
 # Create an ARM deployment outside of DevOps, on my workstation.
+# See https://docs.microsoft.com/en-us/azure/azure-monitor/app/pricing
+# regarding retention period.
+# See https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/azure-monitor/app/powershell.md
+# regarding ARM template "retentionInDays" value.
+#
 # Chris Joakim, Microsoft, 2019/11/13
 
 # azure-specific values
