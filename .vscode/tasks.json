@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "func",
+      "command": "host start",
+      "problemMatcher": "$func-watch",
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}/cjoakim-function-java-1/target/azure-functions/cjoakimfunctionjava1/"
+      },
+      "dependsOn": "package"
+    },
+    {
+      "label": "package",
+      "command": "mvn clean package",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}/cjoakim-function-java-1"
+      }
+    }
+  ]
+}

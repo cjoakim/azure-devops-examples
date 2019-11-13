@@ -1,0 +1,6 @@
+{
+    "azureFunctions.deploySubpath": "cjoakim-function-java-1/target/azure-functions/cjoakimfunctionjava1/",
+    "azureFunctions.projectLanguage": "Java",
+    "azureFunctions.projectRuntime": "~2",
+    "azureFunctions.preDeployTask": "package"
+}
