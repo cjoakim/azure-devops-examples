@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title th:text="${appName}"></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
+</head>
+<body align='center'>
+
+	<h3 class="pagetitle">Application Build Information</h3>
+	
+	<table align='center' border='0'>
+		<tr align='center'>
+			<td class="label">Build Date: </td>
+			<td class="value" th:text="${buildDate}"></td>
+		</tr>
+		<tr align='center'>
+			<td class="label">Build User: </td>
+			<td class="value" th:text="${buildUser}"></td>
+		</tr>
+	</table>
+
+	<h3 class="pagetitle">Application REST Links</h3>
+		
+	<table align='center' border='0'>
+		<tr align='left' th:each="link: ${links}">
+			<td>
+				<a class="label" href="link.html" th:href="@{${link}}" th:text="${link}"></a>
+			</td>
+		</tr>
+	</table>
+	
+	<h3 class="pagetitle">&nbsp;</h3>
+	
+	<table align='center' border='0'>
+		<tr align='center'>
+			<td>
+				<img th:src="@{/img/spring-boot-logo.png}"/>
+			</td>
+			<td>
+				<img th:src="@{/img/cosmosdb-logo.png}"/>
+			</td>
+			<td>
+				<img th:src="@{/img/docker-logo.png}"/>
+			</td>
+		</tr>
+		<tr align='center'>
+			<td colspan='3'>
+				<img th:src="@{/img/azure-devops-logo.png}"/>
+			</td>
+		</tr>
+	</table>
+	
+</body>
+</html>
