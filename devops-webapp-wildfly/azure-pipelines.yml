@@ -1,0 +1,83 @@
+# DevOps Build & Release Pipeline
+# Chris Joakim, Microsoft, 2019/11/25
+
+trigger:
+- master
+
+pool:
+  vmImage: 'Ubuntu 16.04'
+
+variables:
+- group: regular-variable-group
+- group: keyvault-variable-group
+
+steps:
+- script: |
+    echo 'DOCKER_ID:              '$(DOCKER_ID)
+    echo 'IMAGE_NAME:             '$(IMAGE_NAME)
+    echo 'AZURE-ACR-NAME:         '$(AZURE-ACR-NAME)
+    echo 'AZURE-ACR-LOGIN-SERVER: '$(AZURE-ACR-LOGIN-SERVER)
+    echo 'AZURE-ACR-USER-NAME:    '$(AZURE-ACR-USER-NAME)
+    echo 'AZURE-ACR-USER-PASS:    '$(AZURE-ACR-USER-PASS)
+  displayName: 'display the pipeline variables'
+  condition: always()
+
+- script: sudo apt-get install python3-venv
+  displayName: 'install python3-venv'
+
+- script: ./gen-config-files.sh sample_xml $(AZURE-ACR-USER-NAME) $(AZURE-ACR-USER-PASS) $(DOCKER_ID)
+  displayName: 'generate configuration files'
+  # This displays the following, note how the secrets are shown as *** but their actual lengths are shown.
+  # <?xml version="1.0" encoding="UTF-8"?>
+  # <sample>
+  #     <property name="name"    value="***"/>
+  #     <property name="pass"    value="***"/>
+  #     <property name="namelen" value="10"/>
+  #     <property name="passlen" value="32"/>
+  # </sample>
+
+- script: date -u > src/main/resources/build_date.txt
+  displayName: 'create build date resource file'
+
+- script: cat src/main/resources/build_date.txt
+  displayName: 'cat build date resource file'
+
+- script: whoami  > src/main/resources/build_user.txt
+  displayName: 'create build user resource file'
+
+- script: cat src/main/resources/build_user.txt
+  displayName: 'cat build user resource file'
+
+- script: mvn -f pom.xml -Dmaven.test.skip=true clean package
+  displayName: 'mvn clean package'
+
+- script: jar tvf target/root.war
+  displayName: 'list jar contents'
+
+- script: cp target/root.war docker-dir/deployments/root.war
+  displayName: 'copy war file to docker-dir/deployments'
+
+- script: cd docker-dir ; ls -alR ; docker build -f Dockerfile -t $(DOCKER_ID)/$(IMAGE_NAME) .
+  displayName: 'docker build'
+
+- script: docker images | grep azure-webapp-wildfly
+  displayName: 'docker images'
+
+- script: docker tag $(DOCKER_ID)/$(IMAGE_NAME) $(AZURE-ACR-NAME).azurecr.io/$(IMAGE_NAME)
+  displayName: 'docker tag'
+
+- script: docker images
+  displayName: 'docker images - after build and tagging'
+
+- script:   az acr login -n $(AZURE-ACR-NAME) -u $(AZURE-ACR-USER-NAME) -p $(AZURE-ACR-USER-PASS)
+  displayName: 'ACR login'
+
+- script: docker push $(AZURE-ACR-NAME).azurecr.io/$(IMAGE_NAME)
+  displayName: 'docker push to ACR'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+- script: az acr repository list -n $(AZURE-ACR-NAME) -u $(AZURE-ACR-USER-NAME) -p $(AZURE-ACR-USER-PASS) --output table
+  displayName: 'ACR repository list'
+
+- script: az acr repository show --image $(IMAGE_NAME):latest -n $(AZURE-ACR-NAME) -u $(AZURE-ACR-USER-NAME) -p $(AZURE-ACR-USER-PASS)
+  displayName: 'az acr repository show image'

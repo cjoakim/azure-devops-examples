@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sample>
+    <property name="name"    value="{{name}}"/>
+    <property name="pass"    value="{{pass}}"/>
+    <property name="namelen" value="{{namelen}}"/>
+    <property name="passlen" value="{{passlen}}"/>
+</sample>

@@ -1,0 +1,32 @@
+===
+java -version
+openjdk version "1.8.0_232"
+OpenJDK Runtime Environment (Zulu 8.42.0.21-linux64)-Microsoft-Azure-restricted (build 1.8.0_232-b18)
+OpenJDK 64-Bit Server VM (Zulu 8.42.0.21-linux64)-Microsoft-Azure-restricted (build 25.232-b18, mixed mode)
+===
+mvn --version
+Apache Maven 3.6.1 (d66c9c0b3152b2e69ee9bac180bb8fcc8e6af555; 2019-04-04T19:00:29Z)
+Maven home: /usr/share/apache-maven-3.6.1
+Java version: 1.8.0_232, vendor: Azul Systems, Inc., runtime: /usr/lib/jvm/zulu-8-azure-amd64/jre
+Default locale: en_US, platform encoding: UTF-8
+OS name: "linux", version: "4.15.0-1061-azure", arch: "amd64", family: "unix"
+===
+python --version
+Python 2.7.12
+===
+pip --version
+pip 8.1.1 from /usr/lib/python2.7/dist-packages (python 2.7)
+===
+python3 --version
+Python 3.5.2
+===
+pip3 --version
+pip 8.1.1 from /usr/lib/python3/dist-packages (python 3.5)
+===
+node --version
+v12.13.0
+===
+npm --version
+6.12.0
+===
+done
