@@ -1,0 +1,27 @@
+# TaskGroup Template
+# Chris Joakim, Microsoft, 2019/11/26
+# See https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops
+
+steps:
+- script: |
+    echo 'Executing template devops/mvn_build_web.yml'
+  displayName: 'TEMPLATE devops/mvn_build_web.yml'
+  condition: always()
+
+- script: mvn --version
+  displayName: 'mvn --version'
+
+- script: date -u > src/main/resources/build_date.txt
+  displayName: 'create build date resource file'
+
+- script: cat src/main/resources/build_date.txt
+  displayName: 'cat build date resource file'
+
+- script: whoami  > src/main/resources/build_user.txt
+  displayName: 'create build user resource file'
+
+- script: cat src/main/resources/build_user.txt
+  displayName: 'cat build user resource file'
+
+- script: mvn -f pom_web.xml -Dmaven.test.skip=true clean package
+  displayName: 'mvn clean package'

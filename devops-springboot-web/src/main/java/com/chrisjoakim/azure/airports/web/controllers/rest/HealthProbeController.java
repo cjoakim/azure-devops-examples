@@ -8,12 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chrisjoakim.azure.airports.AppConstants;
+import com.chrisjoakim.azure.airports.ApplicationConfig;
 
 /**
  * Spring REST Controller intended for Kubernetes health checks, as it
@@ -24,7 +26,7 @@ import com.chrisjoakim.azure.airports.AppConstants;
  * curl "http://localhost:8080/health/env"
  *
  * @author Chris Joakim
- * @date   2019/11/04
+ * @date   2019/11/26
  */
 @RestController
 @RequestMapping(path="/health", produces="application/json")
@@ -35,6 +37,9 @@ public class HealthProbeController implements AppConstants {
 	private static long aliveRequestCount = 0;
 	
 	Logger logger = LoggerFactory.getLogger(HealthProbeController.class);
+
+	@Autowired
+	protected ApplicationConfig appConfig;
 
 	public HealthProbeController() {
 		
@@ -73,6 +78,8 @@ public class HealthProbeController implements AppConstants {
 			responseData.put("maxMemory", "" + runtime.maxMemory());
 			responseData.put("totalMemory", "" + runtime.totalMemory());
 			responseData.put("freeMemory", "" + runtime.freeMemory());
+			responseData.put("buildDate", appConfig.getBuildDateString());
+			responseData.put("buildUser", appConfig.getBuildUserString());
 			return new ResponseEntity<>(responseData, HttpStatus.OK);
 		}
 		catch (Exception e) {

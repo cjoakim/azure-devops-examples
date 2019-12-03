@@ -1,0 +1,29 @@
+# TaskGroup Template
+# Chris Joakim, Microsoft, 2019/11/26
+# See https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops
+
+steps:
+- script: |
+    echo 'Executing template devops/display_env.yml'
+  displayName: 'TEMPLATE devops/display_env.yml'
+  condition: always()
+
+- script: |
+    echo 'DOCKER_ID:              '$(DOCKER_ID)
+    echo 'IMAGE_NAME:             '$(IMAGE_NAME)
+    echo 'AZURE-ACR-NAME:         '$(AZURE-ACR-NAME)
+    echo 'AZURE-ACR-LOGIN-SERVER: '$(AZURE-ACR-LOGIN-SERVER)
+    echo 'AZURE-ACR-USER-NAME:    '$(AZURE-ACR-USER-NAME)
+    echo 'AZURE-ACR-USER-PASS:    '$(AZURE-ACR-USER-PASS)
+  displayName: 'display the pipeline variables'
+  condition: always()
+
+- script: |
+    echo 'Build.SourceBranch:             '$(Build.SourceBranch)
+    echo 'Build.ArtifactStagingDirectory: '$(Build.ArtifactStagingDirectory)
+    echo 'build.artifactstagingdirectory: '$(build.artifactstagingdirectory)
+    echo 'system.defaultworkingdirectory: '$(system.defaultworkingdirectory)
+    echo 'System.AccessToken:             '$(System.AccessToken)
+    echo 'System.StageName:               '$(System.StageName)
+  displayName: 'display predefined variables'
+  condition: always()

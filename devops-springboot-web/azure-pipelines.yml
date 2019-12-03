@@ -1,80 +1,61 @@
 # DevOps Pipeline Build file
-# Chris Joakim, Microsoft, 2019/11/05
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
+# Chris Joakim, Microsoft, 2019/11/26, 17:53
+# 
+# This multi-stage Pipeline implements the following stages:
+# 1) Feature Build - executed only on feature branches, not master
+#    - just does the maven compile and test
+# 2) Master Build and Deploy - master-branch only, not executed for feature branches
+#    - does the same as the above 'Feature Build'
+#    - additionally builds the Docker container and pushes it to ACR
+# 
+# Links:
 # https://aka.ms/yaml
-
-trigger:
-- master
-
-pool:
-  vmImage: 'Ubuntu 16.04'
-
-variables:
-- group: regular-variable-group
-- group: keyvault-variable-group
-
-steps:
-- script: |
-    echo 'DOCKER_ID:              '$(DOCKER_ID)
-    echo 'IMAGE_NAME:             '$(IMAGE_NAME)
-    echo 'AZURE-ACR-NAME:         '$(AZURE-ACR-NAME)
-    echo 'AZURE-ACR-LOGIN-SERVER: '$(AZURE-ACR-LOGIN-SERVER)
-    echo 'AZURE-ACR-USER-NAME:    '$(AZURE-ACR-USER-NAME)
-    echo 'AZURE-ACR-USER-PASS:    '$(AZURE-ACR-USER-PASS)
-  displayName: 'display the pipeline variables'
-  condition: always()
-
-- script: mvn --version
-  displayName: 'mvn --version'
-
-- script: date -u > src/main/resources/build_date.txt
-  displayName: 'create build date resource file'
-
-- script: cat src/main/resources/build_date.txt
-  displayName: 'cat build date resource file'
-
-- script: whoami  > src/main/resources/build_user.txt
-  displayName: 'create build user resource file'
-
-- script: cat src/main/resources/build_user.txt
-  displayName: 'cat build user resource file'
-
-- script: mvn -f pom_web.xml -Dmaven.test.skip=true clean package
-  displayName: 'mvn clean package'
-
-- script: jar tvf target/springboot-airports-web-0.0.1.jar
-  displayName: 'list jar contents'
-
-- script: docker build -t cjoakim/azure-springboot-airports-web .
-  displayName: 'docker build'
-
-- script: docker images
-  displayName: 'docker images - before build'
-
-- script: docker build -f Dockerfile -t $(DOCKER_ID)/$(IMAGE_NAME) .
-  displayName: 'docker build'
-  
-- script: docker tag $(DOCKER_ID)/$(IMAGE_NAME) $(AZURE-ACR-NAME).azurecr.io/$(IMAGE_NAME)
-  displayName: 'docker tag'
-
-- script: docker images
-  displayName: 'docker images - after build and tagging'
-
-- script:   az acr login -n $(AZURE-ACR-NAME) -u $(AZURE-ACR-USER-NAME) -p $(AZURE-ACR-USER-PASS)
-  displayName: 'ACR login'
-
-- script: docker push $(AZURE-ACR-NAME).azurecr.io/$(IMAGE_NAME)
-  displayName: 'docker push to ACR'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-
-- script: az acr repository list -n $(AZURE-ACR-NAME) -u $(AZURE-ACR-USER-NAME) -p $(AZURE-ACR-USER-PASS) --output table
-  displayName: 'ACR repository list'
-
-
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/process/expressions?view=azure-devops
+# 
+# Comments:
+# Output; note the /a and /s last node of the paths!
+# Build.ArtifactStagingDirectory: /home/vsts/work/1/a
+# build.artifactstagingdirectory: /home/vsts/work/1/a
+# system.defaultworkingdirectory: /home/vsts/work/1/s
+# System.StageName:               Build
 # mvn --version output:
 # Apache Maven 3.6.1 (d66c9c0b3152b2e69ee9bac180bb8fcc8e6af555; 2019-04-04T19:00:29Z)
 # Maven home: /usr/share/apache-maven-3.6.1
 # Java version: 1.8.0_222, vendor: Azul Systems, Inc., runtime: /usr/lib/jvm/zulu-8-azure-amd64/jre
 # Default locale: en_US, platform encoding: UTF-8
 # OS name: "linux", version: "4.15.0-1059-azure", arch: "amd64", family: "unix"
+
+
+trigger:
+- master
+- feature/*
+
+variables:
+- group: regular-variable-group
+- group: keyvault-variable-group
+
+stages:
+- stage: Feature_Build
+  displayName: Feature_Build
+  jobs:  
+  - job: Feature_Build_Job
+    displayName: Feature_Build_Job
+    pool:
+      vmImage: $(VM_IMAGE_NAME)
+    steps:
+    - template: devops/display_env.yml
+    - template: devops/mvn_build_web.yml
+
+- stage: Master_Build_and_Deploy
+  displayName: Master_Build_and_Deploy
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:  
+  - job: Master_Build_and_Deploy_Job
+    displayName: Master_Build_and_Deploy_Job
+    pool:
+      vmImage: $(VM_IMAGE_NAME)
+    steps:
+    - template: devops/display_env.yml
+    - template: devops/mvn_build_web.yml
+    - template: devops/build_push_container.yml

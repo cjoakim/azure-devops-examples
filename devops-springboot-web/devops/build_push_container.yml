@@ -1,0 +1,45 @@
+# TaskGroup Template
+# Chris Joakim, Microsoft, 2019/11/26
+# See https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops
+
+steps:
+- script: |
+    echo 'Executing template devops/build_push_container.yml'
+  displayName: 'TEMPLATE devops/build_push_container.yml'
+  condition: always()
+
+- script: jar tvf target/springboot-airports-web-0.0.2.jar
+  displayName: 'list jar contents'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+  inputs:
+    SourceFolder: '$(system.defaultworkingdirectory)'
+    Contents: '**/*.jar'
+    TargetFolder: '$(build.artifactstagingdirectory)'
+  condition: succeededOrFailed()
+
+- script: docker build -t cjoakim/azure-springboot-airports-web .
+  displayName: 'docker build'
+
+- script: docker images
+  displayName: 'docker images - before build'
+
+- script: docker build -f Dockerfile -t $(DOCKER_ID)/$(IMAGE_NAME) .
+  displayName: 'docker build'
+  
+- script: docker tag $(DOCKER_ID)/$(IMAGE_NAME) $(AZURE-ACR-NAME).azurecr.io/$(IMAGE_NAME)
+  displayName: 'docker tag'
+
+- script: docker images
+  displayName: 'docker images - after build and tagging'
+
+- script:   az acr login -n $(AZURE-ACR-NAME) -u $(AZURE-ACR-USER-NAME) -p $(AZURE-ACR-USER-PASS)
+  displayName: 'ACR login'
+
+- script: docker push $(AZURE-ACR-NAME).azurecr.io/$(IMAGE_NAME)
+  displayName: 'docker push to ACR'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+- script: az acr repository list -n $(AZURE-ACR-NAME) -u $(AZURE-ACR-USER-NAME) -p $(AZURE-ACR-USER-PASS) --output table
+  displayName: 'ACR repository list'

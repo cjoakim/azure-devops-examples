@@ -1,13 +1,13 @@
 FROM openjdk:8-jdk-alpine
 RUN  apk update && apk upgrade && apk add netcat-openbsd
 RUN  mkdir -p /usr/local/app
-ADD  target/springboot-airports-web-0.0.1.jar /usr/local/app/
+ADD  target/springboot-airports-web-0.0.2.jar /usr/local/app/
 ADD  run.sh run.sh
 RUN  chmod +x run.sh
 
 EXPOSE 80
 
-CMD  java -Xmx200m -Dspring.profiles.active=web -jar /usr/local/app/springboot-airports-web-0.0.1.jar
+CMD  java -Xmx200m -Dspring.profiles.active=web -jar /usr/local/app/springboot-airports-web-0.0.2.jar
 
 # docker build -t cjoakim/azure-springboot-airports-web . 
 # docker run -d -e xxx=yyy -p 3001:3000 cjoakim/azure-springboot-airports-web:latest
