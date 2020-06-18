@@ -25,7 +25,7 @@
 
         <version.jedis>2.9.0</version.jedis>
         <version.jackson.core>2.9.6</version.jackson.core>
-        <version.jackson.databind>2.9.6</version.jackson.databind>
+        <version.jackson.databind>2.10.0.pr1</version.jackson.databind>
     </properties>
     
     <dependencyManagement>
